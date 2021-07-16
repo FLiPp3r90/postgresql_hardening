@@ -1,0 +1,31 @@
+---
+# hardening vars
+postgresql_hardening_encryption:
+  postgresql_ssl: "on"
+  postgresql_ssl_ciphers:
+    - "ALL"
+    - "!ADH"
+    - "!LOW"
+    - "!EXP"
+    - "!MD5"
+    - "@STRENGTH"
+  postgresql_ssl_prefer_server_ciphers: "off"
+  postgresql_ssl_ecdh_curve: "prime256v1"
+  postgresql_ssl_min_protocol_version: "TLSv1.2"
+  postgresql_ssl_cert_file: "{{ postgresql_certs_dir }}/postgresql-ssl-cert.pem"
+  postgresql_ssl_key_file: "{{ postgresql_certs_dir }}/postgresql-ssl-cert.key"
+  postgresql_password_encryption: "{{ 'scram-sha-256' if postgresql_version is version_compare('10', '>=') else 'on' }}"
+
+postgresql_hardening_log:
+  postgresql_log_destination: "stderr"
+  postgresql_logging_collector: "on"
+  postgresql_log_directory: "/var/log/postgresql"
+  postgresql_log_filename: "postgresql.log"
+  postgresql_log_file_mode: "0600"
+  postgresql_log_checkpoints:       "on"
+  postgresql_log_connections:       "on"
+  postgresql_log_disconnections:    "on"
+  postgresql_log_duration:          "on"
+  postgresql_log_hostname:          "on"
+  postgresql_log_line_prefix: '%t %u %d %h'
+  postgresql_log_lock_waits: "on"

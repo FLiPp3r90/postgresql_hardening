@@ -1,0 +1,9 @@
+---
+roles:
+  - name: geerlingguy.git
+    version: master
+  - name: geerlingguy.postgresql
+    version: master
+
+collections:
+  - name: community.postgresql

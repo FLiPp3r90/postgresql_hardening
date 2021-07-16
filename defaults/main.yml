@@ -1,0 +1,121 @@
+---
+postgresql_install_repository: true
+
+# YUM repository locations
+postgresql_yum_repository_url: "http://yum.postgresql.org"
+postgresql_pgdg_repository_url: "https://download.postgresql.org/pub/repos/yum/"
+
+# YUM (RedHat, CentOS, etc.) baseurl/gpgkey
+postgresql_yum_repository_baseurl: "{{ postgresql_yum_repository_url }}/{{ postgresql_version }}/{{ ansible_os_family | lower }}/rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}"
+postgresql_yum_repository_gpgkey: "{{ postgresql_pgdg_repository_url }}/RPM-GPG-KEY-PGDG-{{ postgresql_version_terse }}"
+
+ DNF (Fedora) baseurl/gpgkey
+postgresql_dnf_repository_baseurl: "{{ postgresql_yum_repository_url }}/{{ postgresql_version }}/fedora/fedora-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}"
+postgresql_dnf_repository_gpgkey: "{{ postgresql_yum_repository_gpgkey }}"
+
+postgresql_apt_py3_dependencies: ["python3-psycopg2", "locales"]
+postgresql_apt_py2_dependencies: ["python-psycopg2", "python-pycurl", "locales"]
+postgresql_apt_dependencies: "{{ postgresql_apt_py3_dependencies if 'python3' in ansible_python_interpreter|default('') else postgresql_apt_py2_dependencies }}"
+
+# APT settings
+postgresql_apt_key_id: "ACCC4CF8"
+postgresql_apt_key_url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+postgresql_apt_repository: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main {{ postgresql_version }}"
+# Pin-Priority of PGDG repository
+postgresql_apt_pin_priority: 500
+
+# postgresql_copy_certs: true
+# postgresql_certs_dir: /etc/postgresql/ssl
+# postgresql_user: postgres
+# postgresql_group: postgres
+# postgresql_cluster_name: main
+# postgresql_superuser: postgres
+# postgresql_superuser_password: iloverandompasswordsbutthiswilldo
+
+# # should be changed
+# postgresql_ssl_key: |
+#   -----BEGIN PRIVATE KEY-----
+#   MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQDPF07tPM7ImvuA
+#   bfJ+0poxoEExv5bDzXBI1udfm0LwLjXXZD57zBe8LRZEj67yXZRVffQPZCABmkua
+#   dQozZZirzP0s9Gtu60sO6RTSbY3ZstR60y+BoEI2zKIYElzyDjBlT23tw+3w2f1P
+#   EsKRWBL1W//kOcQohh4tN8ufJpvGTPHXtqHOr+9BRs+P7aYmMT3Y7Le7Q0fdgWXv
+#   hqeFzve8spjU6p09w8422r9GxxiiGngf9IEPtkrCoTALGjjbGUNexKeQhWMpg6rU
+#   VMOI0XFAKNz6wKqulLKqki0hC5IZso87gtu/cmYFj2r90zt0NBYGYNBPHChrPk4d
+#   PV+7iWEXvyK3TJqCTi4J+hCglOVSeTqGZSMazi88ggMvXaflMIIeJfIvDIwEL5Ss
+#   kfoBiGUetBNOncL2BhcXf8uuIBm/NyF5YfWaKGE0QZSTW4+s2SpFldCEut2M/qWI
+#   1+ubHo/MGF4PXyImOf2pUNvRijeSJ94EVsBtPqTaG8CU0eyGmH2u1fP6ShOX9aSs
+#   Hi5HT6uj+KxHMwNiWNkJirhi5xh22nb4Nb7auc9wZpgrsfulCTK3M7yCrVnSBgGM
+#   yt+8RysNW2uRCeLKD7O57HBk7XBJvGoCzmp6qhT4jB9cHEu2LXJDGAORavHPtcSB
+#   nw8w8J2hhHVgdtfwoTzHFFnTFo5fmQIDAQABAoICAQCy6tNQ2eFZpbS2X8dLVM7N
+#   I0RQI9OwtRRWifz6N9zcP0BbKAtnz4uOE3ISqASg9sKKHji2921DlTfOaWH3x8Xg
+#   YEk4Bq+u8/A0IKHRr78HH569wylfF8M9Lwy4OV09745WaQpzinxPQza7k1ywT+SJ
+#   QQPS/SmBTWZS8MqmZKfe6mljUjF3rb7Kqc/37H1Ir/BcMyAF1PoI4JveFnszev3E
+#   dJTgFxbk3v+Rmun4z1hz7ORtz0OV/IuYncQxQ2VtveTbwpF2phdnLY9wxQ7ubO0o
+#   XmWU6tJL5MJ75bDBxQpj00Y2Rzdtrvt/wEnSpCXQnpOMzSYLwysUhI7eakEEeIt9
+#   doaPu/VBsvo5WnXjVLscp2ZT3r9NfNNy9AJUF92Jk7KF/s1Dnrxqg+XEzEY82K19
+#   IV8Gjxz8nM159+tHDkgB8ac2lw8Dm0GJ2c5MoUfFGQH8SwRm71TyREfUtnweVoen
+#   X7OuzuOcXSaCb+D/INGR0rJVlBd/I59yXvAgrxdBU42SFaAJ3bsLAzmeeIbg8K2o
+#   T9JEi+1ZxhRZKIbDSiu/p/a7lQNlAvutdlzeBJDBZTHCxVMHRblndZgEggjV9yh0
+#   RXNhfIc+zJkjKpEZKzHl/vOkda0QrA41SI4x84EPmZeu8SmZWbsZFlBMOIPX5pk1
+#   f7XvVxH1s54ml/7kBq8epQKCAQEA+anYAgwChn8rOkR6SY2AIszfvKZIw0oNjSig
+#   EBs7ZPGpVBn8ttJwESvQ6Qz/+/7vhXW0mOPZRr8q9+c+XN2B+99XNF272vn+cGL4
+#   e4q1ivvMhOnGaYSeOBbNCY+zWIVSFfc03ccQzFLChdV9tBoIa/UuTf+thO1hLjzQ
+#   f6zhg6fxEuiNtSknpVe2Je+Jf0N2EbQ7rjEEOIWiPXVAipk1IHEUbJXzQrJkxvCw
+#   F4JHX0dRnBGwSmjxAPeyhcxIp6t54XFrH+UqaimivroWdRR/UxGK4NtEgMZyK3+l
+#   3o6+9y0n76P8wotJp+kIYdd2GaTWF7TXtC7Kg1iPKy3d4Wv3TwKCAQEA1FjbFYbG
+#   GBS+CgJC5vkRNC8kmAZX8KPxM92ex0cg2m8x0A2Lwu/AZh2xZi/W1zhxenkfyjI/
+#   Gw2LlDmtNFbyB8c4m2PaORH86R/Q9e2CA9w06FVLMX7U/VrrbpODdhhypIDbkdoi
+#   plQ3eUcfQAYBno58YlU6ITvHaBf8TGOo2TaP0x8s6fdX+W9K17xEuhUnptF3udth
+#   RWnT+wr9WteV4NKt3tuJJRppeM5Jj0/iGgPiYluObr9bQLZ9FM4c9qdDFE3OSrT0
+#   uXcMRSBvnCF17D477KqWHuUOI6lBCFd2VGO2enIm3s7DSLtY73OCKvoYqGm/cNw1
+#   d+yzCwHBikiAlwKCAQBJ/+aPjMG+3biRV7SrUm6VYgY640qT38IugckXnQq4u8xF
+#   qkI2ah9fZ45PVVQWfBTAiQfTfU1sY8M3oWnhmqIpZqRxWAsTN6AL7bna3F086a9Q
+#   Af6WTgGbfF6fo+EzrqiK7C/WQGehODKB+qp8lG7EmPJ1mf/zc2yniMz/2t0o6cFR
+#   qm4+MQmYP2w0yFAH0ZYQX0yFL/AhVLKm5rcPnaOajwnPuY5VyYyHTtXS0gGXowr0
+#   aGXJWFt+vuxCLi+myvOgN77ZwFIXD2o2f++iGkY29+8jALrINImojPg8BDFkEBVT
+#   OVb0ztYxF6gtX/CYXzw54JdCx8+sqLYexUSLyTWPAoIBAAWLOFUMirlwOTHrszFy
+#   iTdyj6MEb2FR9mcjPxT2z23Ef2luIRr6xWwlFE+Vqic+SwAmj2TpAOrE5ML+6n22
+#   U2VOlzS/W6AnzxGLChqRk9Zj9mGmcGsfY5IlwIXHhiQcKUoQLytUpZjwE+6vo6o5
+#   PeuUzryGexkJBYC7N5QK+gqJuSGK69JD6eESPcL6IFU3XiylxVlt19FHHQit1cV8
+#   YWZYOb/avW7hjKVhxVvfewiw10U4HLTZfBlpakSTyP/LiB3MljkvFkCNUh2v5hoO
+#   aZS8XzYjkf3GfyMBNThxiB5V6Bq0Rj2E6mZItd6yhlB27RPghuX8aczyug3sgtAI
+#   aosCggEAFRAk+Q2Y9efXo/eFCYUotMHL9+nizM9v2d+TSZri++jH0hOq9CHSvbWz
+#   JwQwl2ozl47dOz1GPI3x4Dr0OtKdHTA4JDAYgk2XYSchADcLA2Nsa7+HLc3pVyPc
+#   eXUtSkIQA9lQ7/xSPA5C/L3zQ8f/gRghOn+DeE1/F3/t5OE8+4WESFlZgfTLqqAE
+#   yEuqF+o6mtDQmSPeypmgzDHc+bpPauM1r6hx1bglYjE6cwR1ufi+PygevluXl4UU
+#   2XU2/5bEigXwNdqQSOpWfOu/GMBHM3OmMJ8eo0RSZ7teYZMi0SCuEZrfTdNDFBfp
+#   5Zt0TRtNVKyQPNC/cSPvn/GJ84qzCA==
+#   -----END PRIVATE KEY-----
+# # should be changed
+# postgresql_ssl_crt: |
+#   -----BEGIN CERTIFICATE-----
+#   MIIFazCCA1OgAwIBAgIUZWxd/h872nInexxQMfW3OaGZlNUwDQYJKoZIhvcNAQEL
+#   BQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM
+#   GEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yMTA1MDMxMzI3MzFaFw0zMTA1
+#   MDExMzI3MzFaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEw
+#   HwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggIiMA0GCSqGSIb3DQEB
+#   AQUAA4ICDwAwggIKAoICAQDPF07tPM7ImvuAbfJ+0poxoEExv5bDzXBI1udfm0Lw
+#   LjXXZD57zBe8LRZEj67yXZRVffQPZCABmkuadQozZZirzP0s9Gtu60sO6RTSbY3Z
+#   stR60y+BoEI2zKIYElzyDjBlT23tw+3w2f1PEsKRWBL1W//kOcQohh4tN8ufJpvG
+#   TPHXtqHOr+9BRs+P7aYmMT3Y7Le7Q0fdgWXvhqeFzve8spjU6p09w8422r9Gxxii
+#   Gngf9IEPtkrCoTALGjjbGUNexKeQhWMpg6rUVMOI0XFAKNz6wKqulLKqki0hC5IZ
+#   so87gtu/cmYFj2r90zt0NBYGYNBPHChrPk4dPV+7iWEXvyK3TJqCTi4J+hCglOVS
+#   eTqGZSMazi88ggMvXaflMIIeJfIvDIwEL5SskfoBiGUetBNOncL2BhcXf8uuIBm/
+#   NyF5YfWaKGE0QZSTW4+s2SpFldCEut2M/qWI1+ubHo/MGF4PXyImOf2pUNvRijeS
+#   J94EVsBtPqTaG8CU0eyGmH2u1fP6ShOX9aSsHi5HT6uj+KxHMwNiWNkJirhi5xh2
+#   2nb4Nb7auc9wZpgrsfulCTK3M7yCrVnSBgGMyt+8RysNW2uRCeLKD7O57HBk7XBJ
+#   vGoCzmp6qhT4jB9cHEu2LXJDGAORavHPtcSBnw8w8J2hhHVgdtfwoTzHFFnTFo5f
+#   mQIDAQABo1MwUTAdBgNVHQ4EFgQUkKGM0xaX7Pz0B26XOrBKKsIaDsgwHwYDVR0j
+#   BBgwFoAUkKGM0xaX7Pz0B26XOrBKKsIaDsgwDwYDVR0TAQH/BAUwAwEB/zANBgkq
+#   hkiG9w0BAQsFAAOCAgEAXsdlNFtQOMcT10xo16ZuuHqcthHcVHgtzEQtZBZ3v0Wr
+#   LGLyZc6dl8URvK9r7reIvEA+shug1IariZHKII/4umDF0kIZ+Xz7/qI20AynZU5L
+#   mTrj5n4BmJ7HwI1rkmtuYt1os4jdX/pfj+wkvj7mfVReOHEf8hOBadUQyQGYA0CW
+#   64kQMYVgHR42DNTUbxXp7qR7PRSDfitBUZgisT4tb5XxA2vd1GiLydAwDDItoS1M
+#   mk/OD3rRVWQKGtxNkTeEly+50LOc3X5dp9R4P/w7TJNKrzpSUi+i8dCGhOPp43Dt
+#   WXW3DlTy8hiRN/58Ud8tHQT/RPXhtuLgqPsH9bJmNlVUbII/GN00fZBhiF1R0hBR
+#   xnB7tkzl6hWYnEvPlTcBvZRL6YKJhbW+wKyxeVidbCu9db416K63PidFD5/udkfJ
+#   ZqUp1szUYhv/XLFt0LkIO9wobptdMIKnXptcRJJT3fn+W55LruJtmlnd2O6boquf
+#   SzkFq2HrAM+IwoQwETHU/iJrkUT89n9OLdmunGv9/8rK0R2Uon6vSwDibj4YlvVO
+#   T71S9HvIKO4CQ1Jd+5utYdlBgotyetOQTJkM+c+yU7Yb4u3W4AwkmsUowD3MM9PA
+#   ZnjE1EbnAA8fCpAMh/oibXa/2B4rhpcGpHXNp01/sm2ODajEL5U3J+jXS7oWGp8=
+#   -----END CERTIFICATE-----
