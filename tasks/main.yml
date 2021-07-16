@@ -75,7 +75,7 @@
     path: "{{ postgresql_certs_dir }}"
     owner: "{{ postgresql_user }}"
     group: "{{ postgresql_group }}"
-    mode: "0600"
+    mode: "0700"
     state: directory
   when: postgresql_copy_certs|bool
 
