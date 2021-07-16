@@ -2,9 +2,9 @@
 - name: Converge
   hosts: all
   tasks:
-    - name: "Include postgres_hardening"
+    - name: "Include postgresql_hardening"
       include_role:
-        name: "postgres_hardening"
+        name: "postgresql_hardening"
         
 
         

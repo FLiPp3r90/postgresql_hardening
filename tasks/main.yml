@@ -4,16 +4,146 @@
     - "../vars/{{ ansible_os_family }}_{{ ansible_distribution_major_version }}.yml"
     - "../vars/{{ ansible_os_family }}.yml"
     - "../vars/empty.yml"
-  tags: [always]
 
-- import_tasks: install_apt.yml
+- import_tasks: repo_apt.yml
   when: ansible_pkg_mgr == "apt"
-  tags: [postgresql, postgresql-install]
 
-- import_tasks: install_rhel.yml
+- import_tasks: repo_rhel.yml
   when: (ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf") and (ansible_distribution == "RedHat" or ansible_distribution == "CentOS" or ansible_distribution == "OracleLinux")
-  tags: [postgresql, postgresql-install]
 
-- import_tasks: install_fedora.yml
-  when: ansible_pkg_mgr == "dnf" and ansible_distribution == "Fedora"
-  tags: [postgresql, postgresql-install]
+- name: Set password_encryoption for PostgreSQL version >= 10
+  set_fact:
+    postgresql_password_encryption: 'scram-sha-256'
+  when: postgresql_major_version >= 10
+
+- name: Set password_encryoption for PostgreSQL version <= 10
+  set_fact:
+    postgresql_password_encryption: 'on'
+  when: postgresql_major_version < 10
+
+- name: Set auth_method for PostgreSQL if password_encryption is scram-sha-256
+  set_fact:
+    postgresql_auth_method: 'scram-sha-256'
+  when: postgresql_password_encryption == 'scram-sha-256'
+
+- name: Set auth_method for PostgreSQL if password_encryption is on
+  set_fact:
+    postgresql_auth_method: 'md5'
+  when: postgresql_password_encryption == 'on'
+
+- name: Check log directory already exists
+  stat: "path={{ postgresql_log_dir }}"
+  register: log_dir
+
+- name: Create log directory - temporary with root priviliges
+  file:
+    path: "{{ postgresql_log_dir }}"
+    owner: root
+    group: root
+    mode: "0777"
+    state: directory
+  when: not log_dir.stat.exists
+
+- name: Install PostgreSQL and configure recommanded startup parameters
+  import_role:
+    name: geerlingguy.postgresql
+  vars:
+    postgresql_version: "{{ postgresql_major_version }}"
+    postgresql_global_config_options:
+      - option: password_encryption
+        value: "{{ postgresql_password_encryption }}"
+      - option: logging_collector
+        value: 'on'
+      - option: log_connections
+        value: 'on'
+      - option: log_disconnections
+        value: 'on'
+      - option: log_duration
+        value: 'on'
+      - option: log_hostname
+        value: 'on'
+      - option: log_directory
+        value: "{{ postgresql_log_dir }}"
+      - option: log_filename
+        value: 'postgresql.log'
+      - option: log_line_prefix
+        value: '%t %u %d %h'
+    postgresql_hba_entries: "{{ postgresql_hba_entries_custom }}"
+     
+- name: Create ssl directory
+  file:
+    path: "{{ postgresql_certs_dir }}"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0600"
+    state: directory
+  when: postgresql_copy_certs|bool
+
+- name: Copy sample server private key to host
+  copy:
+    content: |
+      {{ postgresql_ssl_key }}
+    dest: "{{ postgresql_certs_dir }}/server.key"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0600"
+  when: postgresql_copy_certs|bool
+
+- name: Copy sample server certificate to host
+  copy:
+    content: |
+      {{ postgresql_ssl_crt }}
+    dest: "{{ postgresql_certs_dir }}/server.crt"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0650"
+  when: postgresql_copy_certs|bool
+
+- name: Enable PostgreSQL SSL communication
+  postgresql_set:
+    name: ssl
+    value: 'on'
+  notify: restart postgresql
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name: Enable PostgreSQL SSL communication - add certificate
+  postgresql_set:
+    name: ssl_cert_file
+    value: "{{ postgresql_certs_dir }}/server.crt"
+  notify: restart postgresql
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name: Enable PostgreSQL SSL communication - add private key
+  postgresql_set:
+    name: ssl_key_file
+    value: "{{ postgresql_certs_dir }}/server.key"
+  notify: restart postgresql
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name: Enable PostgreSQL SSL communication - use strong ssl ciphers
+  postgresql_set:
+    name: ssl_ciphers
+    value: 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'
+  notify: restart postgresql
+  become: true
+  become_user: "{{ postgresql_user }}"
+ 
+- name: Connect to postgres database and set superuser password
+  postgresql_user:
+    db: "{{ postgresql_superuser }}"
+    user: "{{ postgresql_superuser }}"
+    password: "{{ postgresql_superuser_password }}"
+  no_log: true
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name: Restric log_dir permissions
+  file:
+    path: "{{ postgresql_log_dir }}"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0700"
+    state: directory
