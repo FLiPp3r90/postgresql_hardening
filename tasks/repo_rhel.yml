@@ -7,3 +7,15 @@
     gpgkey: "{{ postgresql_yum_repository_gpgkey }}"
     enabled: yes
   when: postgresql_install_repository
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1718201 
+- name: PostgreSQL | Disable postgresql module (necessary for RHEL8+)
+  command:
+    cmd: dnf module disable postgresql -y
+    warn: false
+  when: "ansible_distribution_major_version == '8'"
+  register: disable_postgresql_module
+  changed_when:
+    - "disable_postgresql_module.rc == 0"
+    - "'Disabling modules:\\n postgresql' in disable_postgresql_module.stdout"
+  # https://github.com/ansible/ansible/issues/64852

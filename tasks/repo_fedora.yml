@@ -1,0 +1,16 @@
+# The standard ca-certs are needed because  without them dnf will fail to
+# validate www.postgresql.org (or probably any other source).
+
+- name: PostgrSQL | Install all the required dependencies | dnf
+  dnf:
+    name: "ca-certificates, python*-pycurl, glibc-common, python*-libselinux, python*-psycopg2, glibc-locale-source"
+    state: present
+
+- name: PostgreSQL | Add yum Repository | dnf
+  yum_repository:
+    name: postgresql
+    state: present
+    description: postgresql yum repo
+    baseurl: "{{ postgresql_dnf_repository_baseurl }}"
+    gpgkey: "{{ postgresql_dnf_repository_gpgkey }}"
+  when: postgresql_install_repository

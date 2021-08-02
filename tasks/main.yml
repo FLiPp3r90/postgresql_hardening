@@ -11,12 +11,15 @@
 - import_tasks: repo_rhel.yml
   when: (ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf") and (ansible_distribution == "RedHat" or ansible_distribution == "CentOS" or ansible_distribution == "OracleLinux")
 
-- name: Set password_encryoption for PostgreSQL version >= 10
+- import_tasks: repo_fedora.yml
+  when: ansible_pkg_mgr == "dnf" and ansible_distribution == "Fedora"
+
+- name: Set password_encryption for PostgreSQL version >= 10
   set_fact:
     postgresql_password_encryption: 'scram-sha-256'
   when: postgresql_major_version >= 10
 
-- name: Set password_encryoption for PostgreSQL version <= 10
+- name: Set password_encryption for PostgreSQL version <= 10
   set_fact:
     postgresql_password_encryption: 'on'
   when: postgresql_major_version < 10
@@ -140,7 +143,7 @@
   become: true
   become_user: "{{ postgresql_user }}"
 
-- name: Restric log_dir permissions
+- name: Restrict log_dir permissions
   file:
     path: "{{ postgresql_log_dir }}"
     owner: "{{ postgresql_user }}"
